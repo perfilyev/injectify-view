@@ -90,13 +90,14 @@ let viewHelper = function () {
     }
 
     if (parentView) {
+        let view = new View(hash);
         let onRender = function () {
             let region = parentView.getRegion(name);
 
             if (!region) {
                 console.error('Region is not initialized, may be view is destroyed');
             } else {
-                region.show(new View(hash));
+                region.show(view);
             }
         };
 
@@ -106,6 +107,12 @@ let viewHelper = function () {
 
         parentView.once('render', onRender);
         parentView.once('destroy', onDestroy);
+        
+        view.once('destroy', function() {
+            parentView.off('render', onRender);
+            parentView.off('destroy', onDestroy);
+            delete parentView[name];
+        });
     } else {
         console.warn('Cannot find "view" for handlebars view helper "' + name + '"');
     }
